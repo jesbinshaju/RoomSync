@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullName      String    @map("full_name") @db.VarChar(100)
+  email         String    @unique @db.VarChar(150)
+  passwordHash  String    @map("password_hash") @db.Text
+  rollNumber    String    @unique @map("roll_number") @db.VarChar(30)
+  phoneNumber   String?   @map("phone_number") @db.VarChar(15)
+  department    String    @db.VarChar(100)
+  yearOfStudy   Int?      @map("year_of_study")
+  gender        String?   @db.VarChar(10)
+  profilePhoto  String?   @map("profile_photo") @db.Text
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  characteristics StudentCharacteristics?
+  roomAllocations  RoomAllocation[]
+  feeInvoices      FeeInvoice[]
+  feePayments      FeePayment[]
+  roomChangeRequests RoomChangeRequest[]
+}
+
+model StudentCharacteristics {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId            String   @unique @map("student_id") @db.Uuid
+  academicMajor        String   @map("academic_major") @db.VarChar(100)
+  studyHoursPerDay     Int      @map("study_hours_per_day")
+  studyTimePreference  String   @map("study_time_preference") @db.VarChar(20)
+  academicGoal         String   @map("academic_goal") @db.VarChar(20)
+  sleepTime            String   @map("sleep_time") @db.VarChar(20)
+  wakeTime             String   @map("wake_time") @db.VarChar(20)
+  napFrequency         String   @map("nap_frequency") @db.VarChar(20)
+  hobbies              String[] @default([])
+  cleanlinessLevel     Int      @map("cleanliness_level")
+  noiseTolerance       Int      @map("noise_tolerance")
+  socialLevel          Int      @map("social_level")
+  guestFrequency       String   @map("guest_frequency") @db.VarChar(20)
+  smoking              Boolean  @default(false)
+  drinking             Boolean  @default(false)
+  dietType             String   @map("diet_type") @db.VarChar(20)
+  foodInRoom           Boolean  @default(true) @map("food_in_room")
+  acPreference         String   @map("ac_preference") @db.VarChar(20)
+  lightSensitivity     String   @map("light_sensitivity") @db.VarChar(20)
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model HostelBlock {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blockName    String   @unique @map("block_name") @db.VarChar(10)
+  gender       String?  @db.VarChar(10)
+  totalFloors  Int      @map("total_floors")
+  wardenName   String?  @map("warden_name") @db.VarChar(100)
+  wardenPhone  String?  @map("warden_phone") @db.VarChar(15)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  rooms      Room[]
+  adminUsers AdminUser[]
+}
+
+model Room {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blockId             String   @map("block_id") @db.Uuid
+  roomNumber          String   @map("room_number") @db.VarChar(10)
+  floorNumber         Int      @map("floor_number")
+  capacity            Int      @default(3)
+  roomType            String   @map("room_type") @db.VarChar(20)
+  hasAc               Boolean  @default(false) @map("has_ac")
+  hasAttachedBathroom Boolean  @default(false) @map("has_attached_bathroom")
+  hasBalcony          Boolean  @default(false) @map("has_balcony")
+  status              String   @default("available") @db.VarChar(20)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  block          HostelBlock     @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  allocations    RoomAllocation[]
+  feeInvoices    FeeInvoice[]
+  roomChangeReq  RoomChangeRequest[] @relation("current_room")
+  roomChangeReq2 RoomChangeRequest[] @relation("requested_room")
+}
+
+model RoomAllocation {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId       String    @map("room_id") @db.Uuid
+  studentId    String    @unique @map("student_id") @db.Uuid
+  allocatedAt  DateTime  @default(now()) @map("allocated_at") @db.Timestamptz
+  allocatedBy  String    @map("allocated_by") @db.VarChar(20)
+  isActive     Boolean   @default(true) @map("is_active")
+  vacatedAt    DateTime? @map("vacated_at") @db.Timestamptz
+  academicYear String   @map("academic_year") @db.VarChar(10)
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model CompatibilityScore {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentAId        String   @map("student_a_id") @db.Uuid
+  studentBId        String   @map("student_b_id") @db.Uuid
+  totalScore        Decimal  @map("total_score") @db.Decimal(5, 2)
+  academicScore     Decimal  @default(0) @map("academic_score") @db.Decimal(5, 2)
+  sleepScore        Decimal  @default(0) @map("sleep_score") @db.Decimal(5, 2)
+  hobbyScore        Decimal  @default(0) @map("hobby_score") @db.Decimal(5, 2)
+  lifestyleScore    Decimal  @default(0) @map("lifestyle_score") @db.Decimal(5, 2)
+  foodScore         Decimal  @default(0) @map("food_score") @db.Decimal(5, 2)
+  environmentScore  Decimal  @default(0) @map("environment_score") @db.Decimal(5, 2)
+  computedAt        DateTime @default(now()) @map("computed_at") @db.Timestamptz
+}
+
+model HostelFeePlan {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planName         String   @map("plan_name") @db.VarChar(100)
+  roomType         String   @map("room_type") @db.VarChar(20)
+  academicYear     String   @map("academic_year") @db.VarChar(10)
+  annualFee        Decimal  @map("annual_fee") @db.Decimal(10, 2)
+  securityDeposit  Decimal  @default(5000) @map("security_deposit") @db.Decimal(10, 2)
+  messFeeMonthly   Decimal  @default(2500) @map("mess_fee_monthly") @db.Decimal(10, 2)
+  lateFinePerDay   Decimal  @default(50) @map("late_fine_per_day") @db.Decimal(6, 2)
+  includesAc       Boolean  @default(false) @map("includes_ac")
+  includesWifi     Boolean  @default(true) @map("includes_wifi")
+  includesLaundry  Boolean  @default(false) @map("includes_laundry")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  feeInvoices FeeInvoice[]
+}
+
+model FeeInvoice {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId      String   @map("student_id") @db.Uuid
+  roomId         String?  @map("room_id") @db.Uuid
+  feePlanId      String?  @map("fee_plan_id") @db.Uuid
+  invoiceNumber  String   @unique @map("invoice_number") @db.VarChar(30)
+  academicYear   String   @map("academic_year") @db.VarChar(10)
+  semester       Int?
+  baseAmount     Decimal  @map("base_amount") @db.Decimal(10, 2)
+  messAmount     Decimal  @default(0) @map("mess_amount") @db.Decimal(10, 2)
+  fineAmount     Decimal  @default(0) @map("fine_amount") @db.Decimal(10, 2)
+  discountAmount Decimal  @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  dueDate        DateTime @map("due_date") @db.Date
+  status         String   @default("pending") @db.VarChar(20)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  room        Room?        @relation(fields: [roomId], references: [id])
+  feePlan     HostelFeePlan? @relation(fields: [feePlanId], references: [id])
+  payments    FeePayment[]
+}
+
+model FeePayment {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String   @map("invoice_id") @db.Uuid
+  studentId       String?  @map("student_id") @db.Uuid
+  amountPaid      Decimal  @map("amount_paid") @db.Decimal(10, 2)
+  paymentMethod   String?  @map("payment_method") @db.VarChar(30)
+  transactionRef  String?  @map("transaction_ref") @db.VarChar(100)
+  paymentDate     DateTime @default(now()) @map("payment_date") @db.Timestamptz
+  receivedBy      String?  @map("received_by") @db.VarChar(100)
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  student Student?   @relation(fields: [studentId], references: [id])
+}
+
+model RoomChangeRequest {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId        String    @map("student_id") @db.Uuid
+  currentRoomId    String    @map("current_room_id") @db.Uuid
+  requestedRoomId  String    @map("requested_room_id") @db.Uuid
+  reason           String    @db.Text
+  status           String    @default("pending") @db.VarChar(20)
+  adminRemarks     String?   @map("admin_remarks") @db.Text
+  requestedAt      DateTime  @default(now()) @map("requested_at") @db.Timestamptz
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz
+
+  student        Student @relation(fields: [studentId], references: [id])
+  currentRoom    Room    @relation("current_room", fields: [currentRoomId], references: [id])
+  requestedRoom  Room    @relation("requested_room", fields: [requestedRoomId], references: [id])
+}
+
+model AdminUser {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String    @db.VarChar(100)
+  email        String    @unique @db.VarChar(150)
+  passwordHash String    @map("password_hash") @db.Text
+  role         String    @db.VarChar(20)
+  blockId      String?   @map("block_id") @db.Uuid
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  block HostelBlock? @relation(fields: [blockId], references: [id])
+}

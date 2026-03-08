@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 262 83% 95%;
+    --accent-foreground: 262 83% 35%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 83% 58%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 15 20% 6%;
+    --foreground: 220 10% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 220 10% 95%;
+    --popover: 220 20% 15%;
+    --popover-foreground: 220 10% 95%;
+    --primary: 262 90% 65%;
+    --primary-foreground: 15 20% 6%;
+    --secondary: 220 14% 18%;
+    --secondary-foreground: 220 10% 95%;
+    --muted: 220 14% 18%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 262 90% 70%;
+    --accent-foreground: 15 20% 6%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 20%;
+    --input: 220 14% 20%;
+    --ring: 262 90% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .card-primary {
+    @apply border-2 border-blue-500/40 bg-blue-500/5;
+  }
+  
+  .card-success {
+    @apply border-2 border-green-500/40 bg-green-500/5;
+  }
+
+  .card-warning {
+    @apply border-2 border-yellow-500/40 bg-yellow-500/5;
+  }
+
+  .card-error {
+    @apply border-2 border-red-500/40 bg-red-500/5;
+  }
+
+  .card-accent {
+    @apply border-2 border-purple-500/40 bg-purple-500/5;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:border-primary/60;
+  }
+
+  .btn-glow {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+}
