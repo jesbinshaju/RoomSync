@@ -27,6 +27,8 @@ model Student {
   feeInvoices      FeeInvoice[]
   feePayments      FeePayment[]
   roomChangeRequests RoomChangeRequest[]
+
+  @@map("students")
 }
 
 model StudentCharacteristics {
@@ -54,6 +56,8 @@ model StudentCharacteristics {
   updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_characteristics")
 }
 
 model HostelBlock {
@@ -68,6 +72,8 @@ model HostelBlock {
 
   rooms      Room[]
   adminUsers AdminUser[]
+
+  @@map("hostel_blocks")
 }
 
 model Room {
@@ -88,6 +94,8 @@ model Room {
   feeInvoices    FeeInvoice[]
   roomChangeReq  RoomChangeRequest[] @relation("current_room")
   roomChangeReq2 RoomChangeRequest[] @relation("requested_room")
+
+  @@map("rooms")
 }
 
 model RoomAllocation {
@@ -102,6 +110,8 @@ model RoomAllocation {
 
   room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("room_allocations")
 }
 
 model CompatibilityScore {
@@ -116,6 +126,8 @@ model CompatibilityScore {
   foodScore         Decimal  @default(0) @map("food_score") @db.Decimal(5, 2)
   environmentScore  Decimal  @default(0) @map("environment_score") @db.Decimal(5, 2)
   computedAt        DateTime @default(now()) @map("computed_at") @db.Timestamptz
+
+  @@map("compatibility_scores")
 }
 
 model HostelFeePlan {
@@ -134,6 +146,8 @@ model HostelFeePlan {
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   feeInvoices FeeInvoice[]
+
+  @@map("hostel_fee_plans")
 }
 
 model FeeInvoice {
@@ -156,6 +170,8 @@ model FeeInvoice {
   room        Room?        @relation(fields: [roomId], references: [id])
   feePlan     HostelFeePlan? @relation(fields: [feePlanId], references: [id])
   payments    FeePayment[]
+
+  @@map("fee_invoices")
 }
 
 model FeePayment {
@@ -172,6 +188,8 @@ model FeePayment {
 
   invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   student Student?   @relation(fields: [studentId], references: [id])
+
+  @@map("fee_payments")
 }
 
 model RoomChangeRequest {
@@ -188,6 +206,8 @@ model RoomChangeRequest {
   student        Student @relation(fields: [studentId], references: [id])
   currentRoom    Room    @relation("current_room", fields: [currentRoomId], references: [id])
   requestedRoom  Room    @relation("requested_room", fields: [requestedRoomId], references: [id])
+
+  @@map("room_change_requests")
 }
 
 model AdminUser {
@@ -201,4 +221,6 @@ model AdminUser {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   block HostelBlock? @relation(fields: [blockId], references: [id])
+
+  @@map("admin_users")
 }

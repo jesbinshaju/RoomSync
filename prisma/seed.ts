@@ -255,70 +255,15 @@ async function main() {
 
   const maleStudents = students.filter((s) => s.gender === "male").slice(0, 18);
   const femaleStudents = students.filter((s) => s.gender === "female").slice(0, 18);
-  const mixedStudents = students.filter((s) => s.gender).slice(0, 18);
 
-  const allocatedIds = new Set<string>();
-
-  for (let i = 0; i < 6; i++) {
-    const room = roomsA[i];
-    if (!room) continue;
-    for (let j = 0; j < 3; j++) {
-      const st = maleStudents[i * 3 + j];
-      if (st && !allocatedIds.has(st.id)) {
-        await prisma.roomAllocation.create({
-          data: {
-            roomId: room.id,
-            studentId: st.id,
-            allocatedBy: "algorithm",
-            academicYear,
-          },
-        });
-        allocatedIds.add(st.id);
-      }
-    }
-  }
-
-  for (let i = 0; i < 6; i++) {
-    const room = roomsB[i];
-    if (!room) continue;
-    for (let j = 0; j < 3; j++) {
-      const st = femaleStudents[i * 3 + j];
-      if (st && !allocatedIds.has(st.id)) {
-        await prisma.roomAllocation.create({
-          data: {
-            roomId: room.id,
-            studentId: st.id,
-            allocatedBy: "algorithm",
-            academicYear,
-          },
-        });
-        allocatedIds.add(st.id);
-      }
-    }
-  }
-
-  const mixedPool = students.filter((s) => !allocatedIds.has(s.id));
-  for (let i = 0; i < 6; i++) {
-    const room = roomsC[i];
-    if (!room) continue;
-    for (let j = 0; j < 3; j++) {
-      const st = mixedPool[i * 3 + j];
-      if (st && !allocatedIds.has(st.id)) {
-        await prisma.roomAllocation.create({
-          data: {
-            roomId: room.id,
-            studentId: st.id,
-            allocatedBy: "algorithm",
-            academicYear,
-          },
-        });
-        allocatedIds.add(st.id);
-      }
-    }
-  }
+  // NOTE: Don't pre-allocate students here!
+  // Students should be allocated via the admin UI using the compatibility algorithm
+  // This allows testing of the allocation feature with characteristics-based matching
 
   console.log("Seed completed. Admin: admin@roomsync.com / password123");
   console.log("Students: male1@test.com, female1@test.com, etc. / password123");
+  console.log("\nNEXT STEP: Go to Admin > Allocation and click 'Run Allocation'");
+  console.log("The algorithm will match students based on their characteristics!");
 }
 
 main()

@@ -6,6 +6,22 @@ import { getStudentFeeSummary } from "@/lib/fees";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
+import { Decimal } from "@prisma/client/runtime/library";
+
+// Define a more specific type for the return of getStudentFeeSummary
+// Adjust this type based on the actual structure returned by getStudentFeeSummary if different
+interface FeeSummary {
+  invoices: Array<any>; // You might want to type this more specifically based on your invoice structure
+  totalDue: number | Decimal;
+  nextDue: {
+    id: string;
+    amount: number | Decimal;
+    date: Date;
+    // Add any other properties of nextDue here
+  } | null;
+  // If 'pendingInvoices' is indeed a property you expect, ensure getStudentFeeSummary returns it
+  // For now, I'm assuming it should be derived from 'invoices' or added to the return type of getStudentFeeSummary
+}
 
 async function getData() {
   const session = await getServerSession(authOptions);
@@ -25,12 +41,13 @@ async function getData() {
     include: { student: true },
   });
 
-  const fees = await getStudentFeeSummary(session.user.id);
-  return { 
+  const fees = await getStudentFeeSummary(session.user.id) as FeeSummary; // Cast to our defined type
+
+  return {
     student,
-    allocation, 
+    allocation,
     roommates,
-    fees 
+    fees
   };
 }
 
@@ -39,6 +56,10 @@ export default async function DashboardPage() {
 
   const hasRoom = !!allocation;
   const nextDue = fees?.nextDue;
+  
+  // Calculate pendingInvoicesCount from fees.invoices or ensure getStudentFeeSummary returns it
+  const pendingInvoicesCount = fees?.invoices?.filter((invoice: any) => !invoice.isPaid).length || 0;
+
 
   return (
     <div className="space-y-8">
@@ -91,13 +112,14 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">Pending Fees</p>
-                <p className="text-3xl font-bold mt-2">{fees?.pendingInvoices?.length || 0}</p>
+                {/* Use the calculated pendingInvoicesCount */}
+                <p className="text-3xl font-bold mt-2">{pendingInvoicesCount}</p>
               </div>
               <div className="text-4xl">{nextDue ? "⚠️" : "✓"}</div>
             </div>
             {fees?.totalDue && (
               <p className="text-sm text-red-400 mt-2 font-semibold">
-                ₹{fees.totalDue.toLocaleString()}
+                ₹{new Decimal(fees.totalDue).toLocaleString()}
               </p>
             )}
           </CardContent>
@@ -216,7 +238,8 @@ export default async function DashboardPage() {
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Next Payment Due</p>
                   <p className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    ₹{nextDue.amount?.toLocaleString() || 0}
+                    {/* Ensure amount is converted to string for display */}
+                    ₹{new Decimal(nextDue.amount).toLocaleString()}
                   </p>
                   <p className="text-sm text-accent font-semibold">
                     Due: {new Date(nextDue.date).toLocaleDateString("en-IN", {
