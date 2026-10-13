@@ -1,4 +1,4 @@
-# RoomSync - Hostel Room Allocation & Management System
+# RoomSync - Hostel Room Allocation & Management System--
 
 Full-stack hostel room allocation system with compatibility-based matching, fee management, and admin controls.
 
